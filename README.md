@@ -1,15 +1,15 @@
 # thetictactwo
 Tanner Davis and John Bradfield's semester project for Programming Languages
 
-# -----------------------------------------
-# Two-Player Tic-Tac-Toe (Command Line)
-# -----------------------------------------
+    # -----------------------------------------
+    # Two-Player Tic-Tac-Toe (Command Line)
+    # -----------------------------------------
 
-def create_board():
+    def create_board():
     return [" " for _ in range(9)]
 
 
-def display_board(board):
+    def display_board(board):
     print("\n")
     print(f" {board[0]} | {board[1]} | {board[2]} ")
     print("---+---+---")
@@ -19,7 +19,7 @@ def display_board(board):
     print("\n")
 
 
-def check_win(board, player):
+    def check_win(board, player):
     # Winning combinations (rows, columns, diagonals)
     win_conditions = [
         [0, 1, 2], [3, 4, 5], [6, 7, 8],  # rows
@@ -33,11 +33,11 @@ def check_win(board, player):
     return False
 
 
-def check_draw(board):
+    def check_draw(board):
     return " " not in board
 
 
-def play_game():
+    def play_game():
     print("Welcome to Tic-Tac-Toe!")
     
     while True:  # Loop to allow resetting game
@@ -64,7 +64,7 @@ def play_game():
             # Check for winner
             if check_win(board, current_player):
                 display_board(board)
-                print(f"🎉 Player {current_player} wins!")
+                print(f" Player {current_player} wins!")
                 game_active = False
             # Check for draw
             elif check_draw(board):
