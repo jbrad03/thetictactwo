@@ -82,6 +82,6 @@ Tanner Davis and John Bradfield's semester project for Programming Languages
             break
 
 
-# Run the game
-if __name__ == "__main__":
+    # Run the game
+    if __name__ == "__main__":
     play_game()
