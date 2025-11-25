@@ -152,6 +152,23 @@ def get_difficulty():
             print("❌ Invalid choice. Enter 1–3.\n")
 
 
+def get_player_marker():
+    while True:
+        print("=" * 35)
+        print("    Choose Your Marker")
+        print("=" * 35)
+        print("X = Crosses (goes first)")
+        print("O = Circles (goes second)")
+        print()
+
+        choice = input("Do you want to be X or O? ").strip().upper()
+
+        if choice in ("X", "O"):
+            return choice
+        else:
+            print("❌ Invalid choice. Enter X or O.\n")
+
+
 # ----------------------------
 # GAME MODES
 # ----------------------------
@@ -186,53 +203,68 @@ def play_pvp():
 
 def play_pve():
     board = create_board()
-    human_player = "X"
-    ai_player = "O"
+    # Let the player choose their marker. Crosses (X) always go first.
+    player_choice = get_player_marker()
+    human_player = player_choice
+    ai_player = "O" if human_player == "X" else "X"
 
-    print("\nYou are X, AI is O")
+    if human_player == "X":
+        print("\nYou are X (Crosses) — you go first.")
+    else:
+        print("\nYou are O (Circles) — AI goes first.")
+
+    print(f"You are {human_player}, AI is {ai_player}")
     print("-" * 35)
 
     difficulty = get_difficulty()
 
+    # Crosses (X) always start first
+    current_turn = "X"
+
     while True:
-        # Human turn
-        display_board(board)
-        print("Your turn!")
-        print("-" * 35)
-
-        move = get_player_move(board)
-        board[move] = human_player
-
-        if check_win(board, human_player):
+        # Human's turn when the current turn matches their marker
+        if current_turn == human_player:
             display_board(board)
-            print("=" * 35)
-            print("🎉 You win!")
-            print("=" * 35)
-            return
-        elif check_draw(board):
-            display_board(board)
-            print("=" * 35)
-            print("🤝 It's a draw!")
-            print("=" * 35)
-            return
+            print("Your turn!")
+            print("-" * 35)
 
-        # AI turn
-        print("\n🤖 AI is thinking...")
-        ai_move = get_ai_move(board, ai_player, difficulty)
-        board[ai_move] = ai_player
+            move = get_player_move(board)
+            board[move] = human_player
 
-        if check_win(board, ai_player):
+            if check_win(board, human_player):
+                display_board(board)
+                print("=" * 35)
+                print("🎉 You win!")
+                print("=" * 35)
+                return
+            elif check_draw(board):
+                display_board(board)
+                print("=" * 35)
+                print("🤝 It's a draw!")
+                print("=" * 35)
+                return
+        else:
+            # AI's turn
             display_board(board)
-            print("=" * 35)
-            print("🤖 AI wins!")
-            print("=" * 35)
-            return
-        elif check_draw(board):
-            display_board(board)
-            print("=" * 35)
-            print("🤝 It's a draw!")
-            print("=" * 35)
-            return
+            print("\n🤖 AI is thinking...")
+            ai_move = get_ai_move(board, ai_player, difficulty)
+            board[ai_move] = ai_player
+
+            if check_win(board, ai_player):
+                display_board(board)
+                print("=" * 35)
+                print("🤖 AI wins!")
+                print("=" * 35)
+                return
+            elif check_draw(board):
+                display_board(board)
+                print("=" * 35)
+                print("🤝 It's a draw!")
+                print("=" * 35)
+                return
+
+        # Switch turns
+        current_turn = "O" if current_turn == "X" else "X"
 
 
 # ----------------------------
