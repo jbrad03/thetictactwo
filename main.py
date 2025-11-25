@@ -1,3 +1,5 @@
+import random
+
 # -----------------------------------------
 # Two-Player Tic-Tac-Toe with AI (Command Line)
 # -----------------------------------------
@@ -17,7 +19,6 @@ def display_board(board):
 
 
 def display_board_with_positions():
-    """Show players which number corresponds to which board position."""
     print("Position guide:")
     print(" 1 | 2 | 3 ")
     print("---+---+---")
@@ -28,27 +29,23 @@ def display_board_with_positions():
 
 
 def check_win(board, player):
-    """Check if the given player has won."""
     win_conditions = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],  # rows
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],  # columns
-        [0, 4, 8], [2, 4, 6]              # diagonals
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
     ]
     return any(all(board[i] == player for i in combo) for combo in win_conditions)
 
 
 def check_draw(board):
-    """Check if the board is full (draw condition)."""
     return " " not in board
 
 
 def get_available_moves(board):
-    """Return a list of available positions on the board."""
     return [i for i in range(9) if board[i] == " "]
 
 
 def get_player_move(board):
-    """Get and validate player input for their move."""
     while True:
         try:
             move = int(input("Choose a spot (1–9): ")) - 1
@@ -66,11 +63,11 @@ def get_player_move(board):
             print("❌ Invalid input. Please enter a number from 1 to 9.")
 
 
+# ----------------------------
+# MINIMAX (Hard)
+# ----------------------------
+
 def minimax(board, depth, is_maximizing, ai_player, human_player):
-    """
-    Minimax algorithm to evaluate the best move for the AI.
-    Returns a score: 10 for AI win, -10 for human win, 0 for draw.
-    """
     if check_win(board, ai_player):
         return 10 - depth
     if check_win(board, human_player):
@@ -78,7 +75,7 @@ def minimax(board, depth, is_maximizing, ai_player, human_player):
     if check_draw(board):
         return 0
     
-    if is_maximizing:  # AI's turn (maximize score)
+    if is_maximizing:
         max_score = -float('inf')
         for move in get_available_moves(board):
             board[move] = ai_player
@@ -86,7 +83,7 @@ def minimax(board, depth, is_maximizing, ai_player, human_player):
             board[move] = " "
             max_score = max(score, max_score)
         return max_score
-    else:  # Human's turn (minimize score)
+    else:
         min_score = float('inf')
         for move in get_available_moves(board):
             board[move] = human_player
@@ -96,14 +93,27 @@ def minimax(board, depth, is_maximizing, ai_player, human_player):
         return min_score
 
 
-def get_ai_move(board, ai_player):
-    """
-    Determine the best move for the AI using minimax algorithm.
-    """
+# -------------------------------------------------------------
+# AI MOVE with Difficulty Setting
+# -------------------------------------------------------------
+
+def get_ai_move(board, ai_player, difficulty):
     human_player = "O" if ai_player == "X" else "X"
+
+    # EASY = random move
+    if difficulty == "easy":
+        return random.choice(get_available_moves(board))
+
+    # MEDIUM = 50% chance minimax, 50% random
+    if difficulty == "medium":
+        if random.random() < 0.5:
+            return random.choice(get_available_moves(board))
+        # else fall through to minimax
+
+    # HARD = always minimax
     best_score = -float('inf')
     best_move = None
-    
+
     for move in get_available_moves(board):
         board[move] = ai_player
         score = minimax(board, 0, False, ai_player, human_player)
@@ -112,15 +122,127 @@ def get_ai_move(board, ai_player):
         if score > best_score:
             best_score = score
             best_move = move
-    
+
     return best_move
 
 
-def get_gamemode():
-    """Allow player to choose between PVP and PVE (AI) modes."""
+# ----------------------------
+# GET DIFFICULTY
+# ----------------------------
+
+def get_difficulty():
     while True:
         print("=" * 35)
-        print("  Select Game Mode")
+        print("     Select AI Difficulty")
+        print("=" * 35)
+        print("1. Easy (Random Moves)")
+        print("2. Medium (Mixed Random + Smart)")
+        print("3. Hard (Unbeatable Minimax)")
+        print()
+
+        choice = input("Choose difficulty (1-3): ").strip()
+
+        if choice == "1":
+            return "easy"
+        elif choice == "2":
+            return "medium"
+        elif choice == "3":
+            return "hard"
+        else:
+            print("❌ Invalid choice. Enter 1–3.\n")
+
+
+# ----------------------------
+# GAME MODES
+# ----------------------------
+
+def play_pvp():
+    board = create_board()
+    current_player = "X"
+
+    while True:
+        display_board(board)
+        print(f"Player {current_player}'s turn")
+        print("-" * 35)
+        
+        move = get_player_move(board)
+        board[move] = current_player
+
+        if check_win(board, current_player):
+            display_board(board)
+            print("=" * 35)
+            print(f"🎉 Player {current_player} wins!")
+            print("=" * 35)
+            return
+        elif check_draw(board):
+            display_board(board)
+            print("=" * 35)
+            print("🤝 It's a draw!")
+            print("=" * 35)
+            return
+        
+        current_player = "O" if current_player == "X" else "X"
+
+
+def play_pve():
+    board = create_board()
+    human_player = "X"
+    ai_player = "O"
+
+    print("\nYou are X, AI is O")
+    print("-" * 35)
+
+    difficulty = get_difficulty()
+
+    while True:
+        # Human turn
+        display_board(board)
+        print("Your turn!")
+        print("-" * 35)
+
+        move = get_player_move(board)
+        board[move] = human_player
+
+        if check_win(board, human_player):
+            display_board(board)
+            print("=" * 35)
+            print("🎉 You win!")
+            print("=" * 35)
+            return
+        elif check_draw(board):
+            display_board(board)
+            print("=" * 35)
+            print("🤝 It's a draw!")
+            print("=" * 35)
+            return
+
+        # AI turn
+        print("\n🤖 AI is thinking...")
+        ai_move = get_ai_move(board, ai_player, difficulty)
+        board[ai_move] = ai_player
+
+        if check_win(board, ai_player):
+            display_board(board)
+            print("=" * 35)
+            print("🤖 AI wins!")
+            print("=" * 35)
+            return
+        elif check_draw(board):
+            display_board(board)
+            print("=" * 35)
+            print("🤝 It's a draw!")
+            print("=" * 35)
+            return
+
+
+# ----------------------------
+# MAIN MENU
+# ----------------------------
+
+def get_gamemode():
+    while True:
+        print("=" * 35)
+        print("        Select Game Mode")
         print("=" * 35)
         print("1. PVP (Player vs Player)")
         print("2. PVE (Player vs AI)")
@@ -136,91 +258,9 @@ def get_gamemode():
             print("❌ Invalid choice. Please enter 1 or 2.\n")
 
 
-def play_pvp():
-    """Player vs Player game mode."""
-    board = create_board()
-    current_player = "X"
-    game_active = True
-
-    while game_active:
-        display_board(board)
-        print(f"Player {current_player}'s turn")
-        print("-" * 35)
-        
-        move = get_player_move(board)
-        board[move] = current_player
-
-        if check_win(board, current_player):
-            display_board(board)
-            print("=" * 35)
-            print(f"🎉 Player {current_player} wins!")
-            print("=" * 35)
-            game_active = False
-        elif check_draw(board):
-            display_board(board)
-            print("=" * 35)
-            print("🤝 It's a draw!")
-            print("=" * 35)
-            game_active = False
-        else:
-            current_player = "O" if current_player == "X" else "X"
-
-
-def play_pve():
-    """Player vs AI game mode."""
-    board = create_board()
-    human_player = "X"
-    ai_player = "O"
-    game_active = True
-
-    print("\nYou are X, AI is O")
-    print("-" * 35)
-
-    while game_active:
-        # Human's turn
-        display_board(board)
-        print(f"Your turn (Player {human_player})")
-        print("-" * 35)
-        
-        move = get_player_move(board)
-        board[move] = human_player
-
-        if check_win(board, human_player):
-            display_board(board)
-            print("=" * 35)
-            print("🎉 You win!")
-            print("=" * 35)
-            game_active = False
-        elif check_draw(board):
-            display_board(board)
-            print("=" * 35)
-            print("🤝 It's a draw!")
-            print("=" * 35)
-            game_active = False
-        else:
-            # AI's turn
-            print("\n🤖 AI is thinking...")
-            move = get_ai_move(board, ai_player)
-            board[move] = ai_player
-
-            if check_win(board, ai_player):
-                display_board(board)
-                print("=" * 35)
-                print("🤖 AI wins! Better luck next time!")
-                print("=" * 35)
-                game_active = False
-            elif check_draw(board):
-                display_board(board)
-                print("=" * 35)
-                print("🤝 It's a draw!")
-                print("=" * 35)
-                game_active = False
-
-
 def play_game():
-    """Main game loop with gamemode selection."""
     print("=" * 35)
-    print("  Welcome to Tic-Tac-Toe!")
+    print("      Welcome to Tic-Tac-Toe!")
     print("=" * 35)
     display_board_with_positions()
 
@@ -230,16 +270,10 @@ def play_game():
 
         if gamemode == "pvp":
             play_pvp()
-        else:  # pve
+        else:
             play_pve()
 
-        # Ask to play again
-        while True:
-            replay = input("Play again? (y/n): ").lower().strip()
-            if replay in ["y", "n"]:
-                break
-            print("❌ Please enter 'y' or 'n'.")
-        
+        replay = input("Play again? (y/n): ").lower().strip()
         if replay != "y":
             print("Thanks for playing! Goodbye! 👋")
             break
